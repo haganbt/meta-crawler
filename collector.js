@@ -4,9 +4,9 @@ var moment  = require('moment');
 var store   = {};
 var fs      = require('fs');
 
-crawler.interval = 500;
+crawler.interval = 1500;
 crawler.maxConcurrency = 3;
-crawler.timeout = 40000;
+crawler.timeout = 5000;
 crawler.initialPath = '/us';
 crawler.stripQuerystring = true;
 
@@ -23,7 +23,7 @@ try {
 
 
     if(keywords !== null && path !== null){
-        console.log('.');
+        console.log(moment().format('MMMM Do YYYY, h:mm:ss a') + ' - Processing response.');
         store[path] = store[path] || {};
 
         var allKeywords = keywords.split(',');
@@ -34,7 +34,7 @@ try {
         }
 
         // save
-        if(~~(Math.random() * 5) + 1 === 3){
+        if(~~(Math.random() * 10) + 1 === 3){
             _save(store);
         }
 
@@ -76,7 +76,7 @@ function _save(data) {
         if(err) {
             console.log(err);
         } else {
-            console.log('Last save: ' + moment().format('MMMM Do YYYY, h:mm:ss a'));
+            console.log(moment().format('MMMM Do YYYY, h:mm:ss a') + ' - Data saved.');
         }
     });
 }
