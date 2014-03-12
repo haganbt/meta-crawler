@@ -3,7 +3,7 @@ var winston   = require('winston')
 
 var logger = new (winston.Logger)({
     transports: [
-        new (winston.transports.Console)({ level: 'info' })
+        new (winston.transports.Console)({ level: 'debug' })
     ]
 });
 
@@ -23,42 +23,40 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             //logger.debug(_getUrlDepth(urlInd));
 
             /*
-             * GLOBAL
+             * GLOBAL - urls to drop
              *
              */
 
-
-            Pattern pattern = Pattern.compile("adsf|qwer");
-            if (pattern.matcher(input).find()) {
-                execute();
+            if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list']) === true){
+                continue;
             }
+
+
 
             /*
              * PRODUCTS
              */
             if(urlInd.indexOf('/us/products') !== -1){
 
+                /*
                 if(urlInd.indexOf('overview') !== -1){
                     continue;
 
-                }
+                }*/
 
 
                 if(_getUrlDepth(urlInd) === 5)
                     _buildTag(2, 3, urlInd, all[urlInd]);
 
-               // if(_getUrlDepth(urlInd) === 6)
-                  //  _buildTag(2, 4, urlInd, all[urlInd]);
+                if(_getUrlDepth(urlInd) === 6)
+                    _buildTag(2, 4, urlInd, all[urlInd]);
 
 
             }
 
 
-            /*
-             for(var key in all[urlInd]) {
-                logger.debug('  -- ' + key + ': ' + all[urlInd][key]);
-             }
-             */
+
+
 
         }
     }
@@ -69,6 +67,24 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
 
 });
+
+// ------
+
+/*
+ * @param string
+ * @param array
+ * @return boolean
+ */
+function _dropUrls(url, list){
+    var length = list.length;
+    while(length--) {
+        if (url.indexOf(list[length])!=-1) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 function _getUrlDepth(url) {
     return (url.split("/").length - 1)
