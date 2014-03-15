@@ -3,9 +3,13 @@ var winston   = require('winston')
 
 var logger = new (winston.Logger)({
     transports: [
-        new (winston.transports.Console)({ level: 'debug' })
+        new (winston.transports.Console)({ level: 'info' })
     ]
 });
+
+
+
+var store = {};
 
 
 fs.readFile('data.txt', 'utf8', function (err,data) {
@@ -22,41 +26,64 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             //logger.debug(urlInd);
             //logger.debug(_getUrlDepth(urlInd));
 
-            /*
+
+             /*
              * GLOBAL - urls to drop
              *
              */
 
-            if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list']) === true){
+            if(urlInd.indexOf('/overview') !== -1){
+                urlInd = urlInd.replace('/overview','');
+            }
+
+
+            if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list','downloads','partnerships']) === true){
                 continue;
             }
 
-            // remove '/overview'
-            if(urlInd.indexOf('/overview') !== -1){
-                urlInd = urlInd.replace(/\/overview/g, '');
+
+
+
+            // split the url by slash and then rebuild adding all keywords to each section
+            // - inherit all child section keywords
+
+            // drop leading "/"
+            if(urlInd.indexOf('/') === 0){
+                urlInd = urlInd.slice(1);
+            }
+            // drop trainilng "/"
+            if(_endsWith(urlInd, '/') === true){
+                urlInd = urlInd.slice(0,-1);
             }
 
-            /*
-             * PRODUCTS
-             */
-            if(urlInd.indexOf('/us/products') !== -1){
+            // drop leading "us/"
+            if(urlInd.indexOf('us/') === 0){
+                urlInd = urlInd.slice(3);
+            }
 
+            // split the url by /
+            var urlParts = urlInd.split("/");
 
-                if(urlInd.indexOf('overview') !== -1){
+            var rebuiltUrl = '';
+            // iterate the path bits and rebuild in the store obj
+            for (var i = 0; i < urlParts.length; i++) {
 
+                // drop specific parts of the url
+                if(_dropUrls(urlInd, ['.html']) === true){
+                    continue;
                 }
 
+                rebuiltUrl = rebuiltUrl + urlParts[i] + '/';
+                //console.log(rebuiltUrl);
 
-                if(_getUrlDepth(urlInd) === 5)
-                    _buildTag(1, 3, urlInd, all[urlInd]);
+                store[rebuiltUrl] = store[rebuiltUrl] || [];
 
-                if(_getUrlDepth(urlInd) === 6)
-                    _buildTag(1, 4, urlInd, all[urlInd]);
-
-                if(_getUrlDepth(urlInd) === 7)
-                    _buildTag(1, 5, urlInd, all[urlInd]);
 
             }
+
+
+            console.log(store);
+
 
 
 
