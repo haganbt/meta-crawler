@@ -29,16 +29,13 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             *
             */
 
-
             urlInd = urlInd.replace(/^\s+|\s+$/g, '');  // trim
             urlInd = urlInd.toLowerCase();              // lower
 
-            if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register']) === true){
-                continue;
-            }
 
-            // drop short urls
-            if(urlInd.length <=4){
+            // Drop URLs that contains specific strings
+
+            if(_dropUrls(urlInd, ['legal','contact','green','image','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register', 'syndication', 'mosaicmenu','privacy','corporate/region','corporate/role','corporate/task','sitemap','logo']) === true){
                 continue;
             }
 
@@ -52,11 +49,20 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
                 urlInd = urlInd.replace(/overview\//g, '');
             }
 
+            if(urlInd.indexOf('/en/') !== -1){
+                urlInd = urlInd.replace(/\/en\//g, '');
+            }
 
             if(_endsWith(urlInd, 'support/') === true){
                 urlInd = urlInd.slice(0,-8);
             }
+            if(_endsWith(urlInd, 'support/') === true){
+                urlInd = urlInd.slice(0,-8);
+            }
 
+            if(_endsWith(urlInd, '/resources/') === true){
+                urlInd = urlInd.slice(0,-10);
+            }
 
 
 
@@ -66,6 +72,9 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
              *
              *
              */
+
+            // todo - drop specific keywords - e.g. oracle
+
 
 
             // Build an array of all keywords for a given url
@@ -77,6 +86,8 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             if(stringy === undefined || stringy === '{"":1}'){
                 continue;
             }
+
+            // todo - remove bad characters e.g. "
 
             // save all keywords to an array
             for(var key in all[urlInd]) {
@@ -107,6 +118,12 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             // drop leading "us/"
             if(urlInd.indexOf('us/') === 0){
                 urlInd = urlInd.slice(3);
+            }
+
+            // todo - drop short urls
+            if(urlInd.length <=4){
+                //console.log('+++++++++++++++++++++++++++++++++++ ' + urlInd);
+                //continue;
             }
 
             // split the url by /
@@ -172,12 +189,6 @@ function _buildTag(url, wordsObj) {
 
     logger.debug('Processing URL - ' + url);
 
-/*
-    if(url.indexOf('overview') !== -1){
-        endDepth = endDepth -1;
-    }
-*/
-
     // if starts/ends with slash, drop so we dont have empty array value
     if(url.indexOf('/') === 0){
         url = url.slice(1);
@@ -214,8 +225,6 @@ function _buildTag(url, wordsObj) {
     var keywords = '';
 
     for(var key in wordsObj) {
-
-
         keywords += wordsObj[key].trim() + ', '
     }
 
@@ -224,8 +233,8 @@ function _buildTag(url, wordsObj) {
 
     // todo - fix this in the collector
     if(keywords !== ''){
-        console.log('URL:  '+url);;
-        console.log('TAGS: '+ tagSting);
+        console.log('// URL:  '+url);;
+        console.log(tagSting);
         console.log('');
     }
 
