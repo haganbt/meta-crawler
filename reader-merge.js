@@ -23,13 +23,17 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
     for(var urlInd in all) {
         if(all.hasOwnProperty(urlInd)){
 
-            //logger.debug(urlInd);
-            //logger.debug(_getUrlDepth(urlInd));
 
+           /*
+            * GLOBAL - urls to drop
+            */
 
-             /*
-             * GLOBAL - urls to drop
-             *
+            if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register']) === true){
+                continue;
+            }
+
+            /*
+             * CUSTOM - any custom modifications
              */
 
             if(urlInd.indexOf('/overview') !== -1){
@@ -37,15 +41,42 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             }
 
 
-            if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list','downloads','partnerships']) === true){
+
+            /*
+             *
+             * Keywords
+             *
+             *
+             */
+
+
+            // Build an array of all keywords for a given url
+            var eachUrlKeywords = new Array();
+
+            // todo - fix this in the collector
+            var stringy = JSON.stringify(all[urlInd]);
+
+
+            if(stringy === undefined || stringy === '{"":1}'){
                 continue;
+            }
+
+            // save all keywords to an array
+            for(var key in all[urlInd]) {
+                var trimmed = key.replace(/^\s+|\s+$/g, '') ;
+                eachUrlKeywords.push(trimmed);
             }
 
 
 
 
-            // split the url by slash and then rebuild adding all keywords to each section
-            // - inherit all child section keywords
+            /*
+             *
+             * URLs
+             *
+             *
+             */
+
 
             // drop leading "/"
             if(urlInd.indexOf('/') === 0){
@@ -63,37 +94,34 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
             // split the url by /
             var urlParts = urlInd.split("/");
-
             var rebuiltUrl = '';
             // iterate the path bits and rebuild in the store obj
             for (var i = 0; i < urlParts.length; i++) {
 
                 // drop specific parts of the url
-                if(_dropUrls(urlInd, ['.html']) === true){
+                if(_dropUrls(urlInd, ['.html','href']) === true){
                     continue;
                 }
 
                 rebuiltUrl = rebuiltUrl + urlParts[i] + '/';
-                //console.log(rebuiltUrl);
-
                 store[rebuiltUrl] = store[rebuiltUrl] || [];
-
+                store[rebuiltUrl].push(eachUrlKeywords);
 
             }
-
-
-            console.log(store);
-
-
-
-
-
 
         }
     }
 
+    //console.log(store);
 
-//logger.debug(data);
+
+    for(var i in store) {
+
+        console.log(i);
+        console.log('  ' +store[i]);
+        console.log('-----------');
+    }
+
 
 
 
@@ -178,4 +206,24 @@ function _buildTag(startDepth, endDepth, url, wordsObj) {
 
 function _endsWith(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
+function isEmpty(obj) {
+
+    // null and undefined are "empty"
+    if (obj == null) return true;
+
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and valueOf enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+
+    return true;
 }
