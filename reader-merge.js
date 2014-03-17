@@ -146,16 +146,10 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
         }
     }
 
-    //console.log(store);
-
+    store = _sortObj(store);
 
     for(var i in store) {
         _buildTag(i, store[i])
-
-
-        //console.log(i);
-        //console.log('  ' +store[i]);
-        //console.log('-----------');
     }
 
 
@@ -233,7 +227,8 @@ function _buildTag(url, wordsObj) {
 
     // todo - fix this in the collector
     if(keywords !== ''){
-        console.log('// URL:  '+url);;
+
+        console.log('// '+url);
         console.log(tagSting);
         console.log('');
     }
@@ -264,4 +259,30 @@ function isEmpty(obj) {
     }
 
     return true;
+}
+
+
+/*
+* sortObj - sort an object by a key
+*
+* @param - object
+* @return obj - a sorted obj
+*/
+function _sortObj(myObj) {
+
+    var keys = Object.keys(myObj)
+        , i
+        , len = keys.length
+        , returnObj = {}
+        ;
+
+    keys.sort();
+
+    for (i = 0; i < len; i++)
+    {
+        k = keys[i];
+        returnObj[k] = returnObj[k] ||  myObj[k];
+    }
+
+    return returnObj;
 }
