@@ -23,12 +23,21 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
     for(var urlInd in all) {
         if(all.hasOwnProperty(urlInd)){
 
+            // trim the url
+            urlInd = urlInd.replace(/^\s+|\s+$/g, '') ;
+
+
 
            /*
             * GLOBAL - urls to drop
             */
 
             if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register']) === true){
+                continue;
+            }
+
+            // drop short urls
+            if(urlInd.length <=4){
                 continue;
             }
 
@@ -99,13 +108,13 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             for (var i = 0; i < urlParts.length; i++) {
 
                 // drop specific parts of the url
-                if(_dropUrls(urlInd, ['.html','href']) === true){
+                if(_dropUrls(urlInd, ['.html','.htm','href']) === true){
                     continue;
                 }
 
                 rebuiltUrl = rebuiltUrl + urlParts[i] + '/';
                 store[rebuiltUrl] = store[rebuiltUrl] || [];
-                store[rebuiltUrl].push(eachUrlKeywords);
+                store[rebuiltUrl] = store[rebuiltUrl].concat(eachUrlKeywords);
 
             }
 
@@ -117,9 +126,13 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
     for(var i in store) {
 
-        console.log(i);
-        console.log('  ' +store[i]);
-        console.log('-----------');
+
+        _buildTag(i, store[i])
+
+
+        //console.log(i);
+        //console.log('  ' +store[i]);
+        //console.log('-----------');
     }
 
 
@@ -149,16 +162,15 @@ function _getUrlDepth(url) {
     return (url.split("/").length - 1)
 }
 
-function _buildTag(startDepth, endDepth, url, wordsObj) {
+function _buildTag(url, wordsObj) {
 
     logger.debug('Processing URL - ' + url);
 
-
+/*
     if(url.indexOf('overview') !== -1){
         endDepth = endDepth -1;
     }
-
-
+*/
 
     // if starts/ends with slash, drop so we dont have empty array value
     if(url.indexOf('/') === 0){
@@ -170,6 +182,12 @@ function _buildTag(startDepth, endDepth, url, wordsObj) {
 
     // split the url by /
     var parts = url.split("/");
+
+
+    var startDepth = 0;
+    var endDepth = parts.length -1;
+
+
     if(parts[startDepth] === undefined || parts[endDepth] === undefined){
         logger.debug('ERROR: Incorrect URL parts specified. LENGTH:' + parts.length + ' START:' + startDepth + ' END:' + endDepth + ' - ' + url);
         logger.debug('-----');
@@ -188,8 +206,11 @@ function _buildTag(startDepth, endDepth, url, wordsObj) {
 
     // build a string from the saved keywords
     var keywords = '';
+
     for(var key in wordsObj) {
-        keywords += key.trim() + ', '
+
+
+        keywords += wordsObj[key].trim() + ', '
     }
 
     keywords = keywords.slice(0, -2)
