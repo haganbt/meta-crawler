@@ -23,14 +23,15 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
     for(var urlInd in all) {
         if(all.hasOwnProperty(urlInd)){
 
-            // trim the url
-            urlInd = urlInd.replace(/^\s+|\s+$/g, '') ;
-
-
 
            /*
             * GLOBAL - urls to drop
+            *
             */
+
+
+            urlInd = urlInd.replace(/^\s+|\s+$/g, '');  // trim
+            urlInd = urlInd.toLowerCase();              // lower
 
             if(_dropUrls(urlInd, ['green','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register']) === true){
                 continue;
@@ -41,13 +42,21 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
                 continue;
             }
 
+
             /*
              * CUSTOM - any custom modifications
+             *
              */
 
-            if(urlInd.indexOf('/overview') !== -1){
-                urlInd = urlInd.replace('/overview','');
+            if(urlInd.indexOf('overview/') !== -1){
+                urlInd = urlInd.replace(/overview\//g, '');
             }
+
+
+            if(_endsWith(urlInd, 'support/') === true){
+                urlInd = urlInd.slice(0,-8);
+            }
+
 
 
 
@@ -62,10 +71,9 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             // Build an array of all keywords for a given url
             var eachUrlKeywords = new Array();
 
-            // todo - fix this in the collector
             var stringy = JSON.stringify(all[urlInd]);
 
-
+            // todo - fix this in the collector
             if(stringy === undefined || stringy === '{"":1}'){
                 continue;
             }
@@ -125,8 +133,6 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
 
     for(var i in store) {
-
-
         _buildTag(i, store[i])
 
 
@@ -218,7 +224,9 @@ function _buildTag(url, wordsObj) {
 
     // todo - fix this in the collector
     if(keywords !== ''){
-        console.log(tagSting);
+        console.log('URL:  '+url);;
+        console.log('TAGS: '+ tagSting);
+        console.log('');
     }
 
     logger.debug('-----');
