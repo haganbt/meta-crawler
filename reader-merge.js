@@ -35,9 +35,15 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
             // Drop URLs that contains specific strings
 
-            if(_dropUrls(urlInd, ['legal','contact','green','image','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register', 'syndication', 'mosaicmenu','privacy','corporate/region','corporate/role','corporate/task','sitemap','logo']) === true){
+            if(_dropUrls(urlInd, ['legal','contact','social-media','green','image','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register', 'syndication', 'mosaicmenu','privacy','corporate/region','corporate/role','corporate/task','sitemap','logo','.css']) === true){
                 continue;
             }
+
+            // Drop any short urls - typically country codes like /ru/
+            if(urlInd.length <=4){
+                continue;
+            }
+
 
 
             /*
@@ -56,14 +62,18 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             if(_endsWith(urlInd, 'support/') === true){
                 urlInd = urlInd.slice(0,-8);
             }
-            if(_endsWith(urlInd, 'support/') === true){
-                urlInd = urlInd.slice(0,-8);
+
+            if(_endsWith(urlInd, 'whatsnew/') === true){
+                urlInd = urlInd.slice(0,-9);
             }
 
             if(_endsWith(urlInd, '/resources/') === true){
                 urlInd = urlInd.slice(0,-10);
             }
 
+            if(urlInd.indexOf('assets') !== -1){
+                console.log('+++++' + urlInd);
+            }
 
 
             /*
@@ -110,6 +120,7 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
             if(urlInd.indexOf('/') === 0){
                 urlInd = urlInd.slice(1);
             }
+
             // drop trainilng "/"
             if(_endsWith(urlInd, '/') === true){
                 urlInd = urlInd.slice(0,-1);
@@ -120,13 +131,6 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
                 urlInd = urlInd.slice(3);
             }
 
-            // todo - drop short urls
-            if(urlInd.length <=4){
-                //console.log('+++++++++++++++++++++++++++++++++++ ' + urlInd);
-                //continue;
-            }
-
-            // split the url by /
             var urlParts = urlInd.split("/");
             var rebuiltUrl = '';
             // iterate the path bits and rebuild in the store obj
@@ -148,6 +152,8 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
     store = _sortObj(store);
 
+    _getStats(store);
+
     for(var i in store) {
         _buildTag(i, store[i])
     }
@@ -157,7 +163,50 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
 });
 
-// ------
+// --------------------------------------
+
+
+function _getStats(storeObj) {
+
+    var stats   = {};
+    var keys    = Object.keys(storeObj);
+
+    for (var i = 0; i < keys.length; i++) {
+        //console.log(keys[i]);
+
+        var chunks = keys[i].split('/');
+
+        stats[chunks[0]] = stats[chunks[0]] || {};
+        stats[chunks[0]].urlCount = stats[chunks[0]].urlCount || 0;
+        stats[chunks[0]].urlCount ++;
+
+        stats[chunks[0]].totalSectionChunks = stats[chunks[0]].totalSectionChunks || 0;
+        stats[chunks[0]].totalSectionChunks += chunks.length;
+
+        stats[chunks[0]].averageTagLength = stats[chunks[0]].averageTagLength || 0;
+        stats[chunks[0]].averageTagLength = stats[chunks[0]].totalSectionChunks / stats[chunks[0]].urlCount;
+        stats[chunks[0]].averageTagLength = Math.round(stats[chunks[0]].averageTagLength * 100) / 100; // round to 2 decimals
+    }
+
+    // output stats
+    console.log('/* STATS');
+    for(var url in stats) {
+        if(stats.hasOwnProperty(url)){
+            console.log(url);
+            for(var key in stats[url]) {
+                console.log('  -- ' + key + ': ' + stats[url][key]);
+            }
+
+        }
+    }
+    console.log('*/');
+    console.log('');
+    console.log('');
+
+
+}
+
+
 
 /*
  * @param string
@@ -178,6 +227,7 @@ function _dropUrls(url, list){
 function _getUrlDepth(url) {
     return (url.split("/").length - 1)
 }
+
 
 function _buildTag(url, wordsObj) {
 
@@ -237,9 +287,11 @@ function _buildTag(url, wordsObj) {
 
 }
 
+
 function _endsWith(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
+
 
 function isEmpty(obj) {
 
