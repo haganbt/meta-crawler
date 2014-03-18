@@ -1,7 +1,8 @@
-var fs = require('fs');
-var winston   = require('winston')
-
-var logger = new (winston.Logger)({
+var fs      = require('fs');
+var winston = require('winston');
+var stats   = {};
+var store = {};
+var logger  = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)({ level: 'info' })
     ]
@@ -9,7 +10,7 @@ var logger = new (winston.Logger)({
 
 
 
-var store = {};
+
 
 
 fs.readFile('data.txt', 'utf8', function (err,data) {
@@ -150,15 +151,26 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
         }
     }
 
+
+
+
+    /*
+     *
+     * PROCESS
+     *
+     *
+     */
+
+    // sort
     store = _sortObj(store);
 
+    // build stst for each section
     _getStats(store);
 
+    // build tags
     for(var i in store) {
         _buildTag(i, store[i])
     }
-
-
 
 
 });
@@ -168,7 +180,7 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
 function _getStats(storeObj) {
 
-    var stats   = {};
+
     var keys    = Object.keys(storeObj);
 
     for (var i = 0; i < keys.length; i++) {
@@ -181,15 +193,15 @@ function _getStats(storeObj) {
         stats[chunks[0]].urlCount ++;
 
         stats[chunks[0]].totalSectionChunks = stats[chunks[0]].totalSectionChunks || 0;
-        stats[chunks[0]].totalSectionChunks += chunks.length;
+        stats[chunks[0]].totalSectionChunks += chunks.length -1;
 
         stats[chunks[0]].averageTagLength = stats[chunks[0]].averageTagLength || 0;
         stats[chunks[0]].averageTagLength = stats[chunks[0]].totalSectionChunks / stats[chunks[0]].urlCount;
         stats[chunks[0]].averageTagLength = Math.round(stats[chunks[0]].averageTagLength * 100) / 100; // round to 2 decimals
     }
 
+    /*
     // output stats
-    console.log('/* STATS');
     for(var url in stats) {
         if(stats.hasOwnProperty(url)){
             console.log(url);
@@ -199,11 +211,7 @@ function _getStats(storeObj) {
 
         }
     }
-    console.log('*/');
-    console.log('');
-    console.log('');
-
-
+    */
 }
 
 
@@ -241,13 +249,19 @@ function _buildTag(url, wordsObj) {
         url = url.slice(0,-1);
     }
 
-    // split the url by /
     var parts = url.split("/");
-
-
     var startDepth = 0;
     var endDepth = parts.length -1;
 
+    // section ststs
+    if(url in stats){
+        console.log("\n\n/*");
+        console.log(' * STATS for path "'+url + '"');
+        console.log(' *  - Total URL Count: '+ stats[url]['urlCount']);
+        console.log(' *  - Total URL Sections: '+ stats[url]['totalSectionChunks']);
+        console.log(' *  - Average Section Length: '+ stats[url]['averageTagLength']);
+        console.log(" */\n");
+    }
 
     if(parts[startDepth] === undefined || parts[endDepth] === undefined){
         logger.debug('ERROR: Incorrect URL parts specified. LENGTH:' + parts.length + ' START:' + startDepth + ' END:' + endDepth + ' - ' + url);
@@ -255,8 +269,9 @@ function _buildTag(url, wordsObj) {
         return;
     }
 
-    logger.debug('DEBUG: Building tags between "' + parts[startDepth] + '" and "' + parts[endDepth] +'"');
+    logger.debug('Building tags between "' + parts[startDepth] + '" and "' + parts[endDepth] +'"');
     logger.debug(parts);
+
 
     var tagSting = 'tag.';
     for (var i=startDepth; i < (endDepth); i++){
