@@ -8,11 +8,6 @@ var logger  = new (winston.Logger)({
     ]
 });
 
-
-
-
-
-
 fs.readFile('data.txt', 'utf8', function (err,data) {
 
     if (err) {
@@ -36,7 +31,7 @@ fs.readFile('data.txt', 'utf8', function (err,data) {
 
             // Drop URLs that contains specific strings
 
-            if(_dropUrls(urlInd, ['legal','contact','social-media','green','image','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register', 'syndication', 'mosaicmenu','privacy','corporate/region','corporate/role','corporate/task','sitemap','logo','.css']) === true){
+            if(_dropUrls(urlInd, ['legal','contact','social-media','accessibility','welcome','green','image','a-to-z', 'ssLINK', 'product-list','download','partnerships','.jpg','register', 'syndication', 'mosaicmenu','privacy','corporate/region','corporate/role','corporate/task','sitemap','logo','.css']) === true){
                 continue;
             }
 
