@@ -26,6 +26,7 @@ try {
         console.log(moment().format('MMMM Do YYYY, h:mm:ss a') + ' - Processing response.');
         store[path] = store[path] || {};
 
+        keywords = keywords.replace(/^\s+|\s+$/g, '');  // trim
         var allKeywords = keywords.split(',');
 
         for (var i = 0; i < allKeywords.length; i++) {
