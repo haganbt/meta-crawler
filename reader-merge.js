@@ -283,7 +283,7 @@ function _buildTag(url, wordsObj) {
     }
 
     keywords = keywords.slice(0, -2)
-    tagSting += keywords + '" }';
+    tagSting += keywords + '" OR links.title ANY "' + keywords + '" }';
 
     // todo - fix this in the collector
     if(keywords !== ''){
