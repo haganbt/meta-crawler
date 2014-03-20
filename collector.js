@@ -30,6 +30,13 @@ try {
         var allKeywords = keywords.split(',');
 
         for (var i = 0; i < allKeywords.length; i++) {
+
+            allKeywords[i] = allKeywords[i].replace(/^\s+|\s+$/g, '');  // trim
+
+            if(allKeywords[i] === ''){
+                continue;
+            }
+
             store[path][allKeywords[i]] = store[path][allKeywords[i]] || 0;
             store[path][allKeywords[i]] ++;
         }
@@ -51,7 +58,9 @@ try {
 });
 
 
-
+crawler.on("complete",function(queueItem, responseBuffer, response) {
+    console.log('******* Collection Complete *******') ;
+});
 
 
 // ------------------------
@@ -73,7 +82,7 @@ function _endsWith(str, suffix) {
 }
 
 function _save(data) {
-    fs.writeFile("data.txt", JSON.stringify(data), function(err) {
+    fs.writeFile("data.json", JSON.stringify(data), function(err) {
         if(err) {
             console.log(err);
         } else {
