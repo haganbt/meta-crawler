@@ -12,8 +12,8 @@ crawler.stripQuerystring = true;
 
 
 crawler.addFetchCondition(function(parsedURL) {
-    if (parsedURL.path.match(/\.(css|jpg|pdf|docx|js|png|ico)/i)) {
-        console.log("INFO: Ignoring ",parsedURL.path);
+    if (parsedURL.path.match(/\.(css|jpg|pdf|gif|docx|png|ico)/i)) {
+        //console.log("INFO: Ignoring ",parsedURL.path);
         return false;
     }
 
@@ -26,11 +26,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
 try {
     console.log('RECEIVED: ' + queueItem.path);
     var result = responseBuffer.toString('utf-8')
-    var keywords = result.match('<meta name="keywords" content="(.*?)" />')[1];
+    var keywords = result.match(/<meta name="keywords" content="(.*?)"/i)[1];
 
-
-
-    //var keywords = result.match('<meta content="(.*?)" name="Keywords"/>')[1];
 
     //var description = result.match('<meta name="Description" content="(.*?)">')[1];
     var path =  _cleanPath(queueItem.path);
