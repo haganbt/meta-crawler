@@ -1,22 +1,37 @@
 var Crawler = require("simplecrawler");
-var crawler = Crawler.crawl("http://oracle.com/");
+var crawler = Crawler.crawl("http://hp.com");
 var moment  = require('moment');
 var store   = {};
 var fs      = require('fs');
 
-crawler.interval = 1500;
+crawler.interval = 500;
 crawler.maxConcurrency = 3;
 crawler.timeout = 5000;
-crawler.initialPath = '/us';
 crawler.stripQuerystring = true;
+//crawler.initialPath = '/us/en/';
+
+
+crawler.addFetchCondition(function(parsedURL) {
+    if (parsedURL.path.match(/\.(css|jpg|pdf|docx|js|png|ico)/i)) {
+        console.log("INFO: Ignoring ",parsedURL.path);
+        return false;
+    }
+
+    return true;
+});
 
 
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
 
 try {
-
+    console.log('RECEIVED: ' + queueItem.path);
     var result = responseBuffer.toString('utf-8')
-    var keywords = result.match('<meta name="Keywords" content="(.*?)">')[1];
+    var keywords = result.match('<meta name="keywords" content="(.*?)" />')[1];
+
+
+
+    //var keywords = result.match('<meta content="(.*?)" name="Keywords"/>')[1];
+
     //var description = result.match('<meta name="Description" content="(.*?)">')[1];
     var path =  _cleanPath(queueItem.path);
 
@@ -52,7 +67,7 @@ try {
 
 
 } catch (e){
-    //console.log(e);
+    console.log('ERROR: No matching meta data - ' + e);
 }
 
 });
@@ -82,7 +97,7 @@ function _endsWith(str, suffix) {
 }
 
 function _save(data) {
-    fs.writeFile("data.json", JSON.stringify(data), function(err) {
+    fs.writeFile("hp.json", JSON.stringify(data), function(err) {
         if(err) {
             console.log(err);
         } else {
