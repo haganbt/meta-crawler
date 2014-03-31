@@ -12,6 +12,7 @@ crawler.stripQuerystring = true;
 
 
 crawler.addFetchCondition(function(parsedURL) {
+    // todo - ignore js and not jsp
     if (parsedURL.path.match(/\.(css|jpg|pdf|gif|docx|png|ico)/i)) {
         //console.log("INFO: Ignoring ",parsedURL.path);
         return false;
@@ -23,49 +24,49 @@ crawler.addFetchCondition(function(parsedURL) {
 
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response) {
 
-try {
-    console.log('RECEIVED: ' + queueItem.path);
-    var result = responseBuffer.toString('utf-8')
-    var keywords = result.match(/<meta name="keywords" content="(.*?)"/i)[1];
+    try {
+
+        console.log('RECEIVED: ' + queueItem.path);
+        var result = responseBuffer.toString('utf-8')
+        var keywords = result.match(/<meta(?=[^>]*\bname="keywords")[^>]*\bcontent="(.*?)".*/i)[1];
+        //var description = result.match('<meta name="Description" content="(.*?)">')[1];
+        var path =  _cleanPath(queueItem.path);
 
 
-    //var description = result.match('<meta name="Description" content="(.*?)">')[1];
-    var path =  _cleanPath(queueItem.path);
 
 
 
-    if(keywords !== null && path !== null){
-        console.log(moment().format('MMMM Do YYYY, h:mm:ss a') + ' - Processing response.');
-        store[path] = store[path] || {};
+        if(keywords !== null && keywords !== '' && path !== null){
+            console.log(moment().format('MMMM Do YYYY, h:mm:ss a') + ' - Processing response.');
+            store[path] = store[path] || {};
 
-        keywords = keywords.replace(/^\s+|\s+$/g, '');  // trim
-        var allKeywords = keywords.split(',');
+            keywords = keywords.replace(/^\s+|\s+$/g, '');  // trim
+            var allKeywords = keywords.split(',');
 
-        for (var i = 0; i < allKeywords.length; i++) {
+            for (var i = 0; i < allKeywords.length; i++) {
 
-            allKeywords[i] = allKeywords[i].replace(/^\s+|\s+$/g, '');  // trim
+                allKeywords[i] = allKeywords[i].replace(/^\s+|\s+$/g, '');  // trim
 
-            if(allKeywords[i] === ''){
-                continue;
+                if(allKeywords[i] === ''){
+                    continue;
+                }
+
+                store[path][allKeywords[i]] = store[path][allKeywords[i]] || 0;
+                store[path][allKeywords[i]] ++;
             }
 
-            store[path][allKeywords[i]] = store[path][allKeywords[i]] || 0;
-            store[path][allKeywords[i]] ++;
+            // save
+            if(~~(Math.random() * 10) + 1 === 3){
+                _save(store);
+            }
+
+
         }
 
-        // save
-        if(~~(Math.random() * 10) + 1 === 3){
-            _save(store);
-        }
-
-
+    } catch (e){
+        console.log('ERROR: No matching meta data - ' + e);
     }
 
-
-
-} catch (e){
-    console.log('ERROR: No matching meta data - ' + e);
-}
 
 });
 
