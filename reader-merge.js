@@ -8,7 +8,7 @@ var logger  = new (winston.Logger)({
     ]
 });
 
-fs.readFile('data.txt', 'utf8', function (err,data) {
+fs.readFile('data.json', 'utf8', function (err,data) {
 
     if (err) {
         return logger.debug(err);
